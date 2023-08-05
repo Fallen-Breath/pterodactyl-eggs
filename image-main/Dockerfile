@@ -20,5 +20,5 @@ USER container
 ENV USER=container HOME=/home/container
 
 WORKDIR /home/container
-COPY ./entrypoint.sh ./pre_start.py /
+COPY ./entrypoint.sh ./start_hook.py ./start_hook.yml /
 CMD ["/bin/bash", "/entrypoint.sh"]

@@ -1,0 +1,9 @@
+install:
+  permission.yml:
+    owner: null
+
+pre_start:
+  config.yml:
+    start_command: '${MCDR_START_COMMAND}'
+    handler: '${MCDR_HANDLER}'
+    advanced_console: false
