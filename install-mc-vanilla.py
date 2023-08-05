@@ -4,6 +4,7 @@ import sys
 import time
 from io import BytesIO
 from pathlib import Path
+from typing import Tuple
 
 import requests
 
@@ -22,6 +23,27 @@ def title(s: str):
 def switch_cwd(path: Path):
 	path.mkdir(parents=True, exist_ok=True)
 	os.chdir(path)
+
+
+def download(url: str) -> Tuple[bytes, float, float]:
+	buf = BytesIO()
+	response = requests.get(url, stream=True)
+	total_mb = int(response.headers.get('content-length')) / 1048576
+	downloaded_mb = 0
+	start_time = time.time()
+	last_report = start_time
+
+	for chunk in response.iter_content(chunk_size=1024):
+		now = time.time()
+		downloaded_mb += len(chunk) / 1048576
+		buf.write(chunk)
+
+		if now - last_report >= 1:
+			percent = (downloaded_mb / max(total_mb, 1)) * 100
+			log(f'  {downloaded_mb:.2f}MB / {total_mb:.2f}MB, {percent:.2f}%')
+			last_report = now
+
+	return buf.getvalue(), downloaded_mb, time.time() - start_time
 
 
 def main():
@@ -65,27 +87,10 @@ def main():
 
 	server_jar_path = os.environ['SERVER_JARFILE']
 	log('Downloading server jar from {} to {}'.format(server_url, repr(server_jar_path)))
-	buf = BytesIO()
-	response = requests.get(server_url, stream=True)
-	total_mb = int(response.headers.get('content-length')) / 1048576
-	downloaded_mb = 0
-	start_time = time.time()
-	last_report = start_time
-
-	for chunk in response.iter_content(chunk_size=1024):
-		now = time.time()
-		downloaded_mb += len(chunk) / 1048576
-		buf.write(chunk)
-
-		if now - last_report >= 1:
-			percent = (downloaded_mb / max(total_mb, 1)) * 100
-			log(f'  {downloaded_mb:.2f}MB / {total_mb:.2f}MB, {percent:.2f}%')
-			last_report = now
-
-	cost = time.time() - start_time
+	server_jar_bytes, downloaded_mb, cost = download(server_url)
 	log(f'Download complete, time cost {cost:.2f}s, {downloaded_mb / cost:.2f}MB/s')
 	with open(server_jar_path, 'wb') as f:
-		f.write(buf.getvalue())
+		f.write(server_jar_bytes)
 	log('Saved server jar to {}'.format(repr(server_jar_path)))
 
 	# ================================================================
