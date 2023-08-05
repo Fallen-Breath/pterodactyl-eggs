@@ -6,4 +6,5 @@ pre_start:
   config.yml:
     start_command: '${MCDR_START_COMMAND}'
     handler: '${MCDR_HANDLER}'
-    advanced_console: false
+    check_update: false  # it's useless to check update inside an image
+    advanced_console: false  # no tty environment
