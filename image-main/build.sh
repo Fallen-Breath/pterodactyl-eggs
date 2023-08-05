@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 TAG=fallenbreath/pterodactyl-mc-mcdr:bullseye-17-2.10
 

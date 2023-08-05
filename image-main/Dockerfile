@@ -13,8 +13,7 @@ RUN sed -i.bak 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list \
 COPY requirements.txt /requirements.txt
 RUN python3 -m pip install -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple \
     && pip3 install ${MCDR_VERSION} ruamel.yaml -i https://pypi.tuna.tsinghua.edu.cn/simple \
-    && pip3 install -r /requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple \
-    && echo
+    && pip3 install -r /requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 USER container
 ENV USER=container HOME=/home/container
