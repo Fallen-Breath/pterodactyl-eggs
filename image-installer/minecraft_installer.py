@@ -51,13 +51,16 @@ def request_get(*args, **kwargs) -> requests.Response:
 		}
 
 	errors = []
-	for i in range(3):
+	retries = 3
+	for i in range(retries):
 		try:
 			return requests.get(*args, **kwargs)
 		except (requests.exceptions.ConnectionError, ssl.SSLError) as e:
 			errors.append(e)
+			if i < retries - 1:
+				log('[WARN] requests.get() attempt {} failed ({}), retrying'.format(i + 1, e))
 	if len(errors) > 0:
-		log("[ERROR] All requests.get() attempts failed: {}".format(list(map(str, errors))))
+		log('[ERROR] All requests.get() attempts failed')
 		raise errors[0] from None
 
 
