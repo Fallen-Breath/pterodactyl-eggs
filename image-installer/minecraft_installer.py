@@ -180,13 +180,14 @@ def install_fabric(mc_version: str):
 
 
 class ServerType(enum.Enum):
+	NONE = enum.auto()
 	VANILLA = enum.auto()
 	FABRIC = enum.auto()
 
 
 def main():
 	parser = ArgumentParser()
-	parser.add_argument('server_type', help='Supported server types: vanilla, fabric')
+	parser.add_argument('server_type', help='Supported server types: none, vanilla, fabric')
 	args = parser.parse_args()
 
 	# ================================================================
@@ -200,7 +201,10 @@ def main():
 
 	prepare()
 
-	if server_type == ServerType.VANILLA:
+	if server_type == ServerType.NONE:
+		log('Doing nothing server_type none')
+
+	elif server_type == ServerType.VANILLA:
 		install_vanilla(get_mc_version(), get_env('SERVER_JARFILE'))
 
 	elif server_type == ServerType.FABRIC:
