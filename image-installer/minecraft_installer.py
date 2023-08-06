@@ -61,7 +61,7 @@ def download(url: str) -> Tuple[bytes, float, float]:
 		if now - last_report >= 5:
 			percent = (downloaded_mb / max(total_mb, 1)) * 100
 			if percent > 0:
-				eta_sec = (now - start_time) / percent * (1 - percent)
+				eta_sec = (now - start_time) / percent * (100 - percent)
 				if eta_sec > 60:
 					eta = f'{eta_sec / 60:.2f}min'
 				else:
