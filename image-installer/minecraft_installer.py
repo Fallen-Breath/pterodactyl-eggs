@@ -157,7 +157,7 @@ def install_fabric(mc_version: str):
 		sys.exit(1)
 
 	installer_name = os.path.basename(installer_url)
-	log('Downloading {} from {}'.format(repr(installer_name), installer_url))
+	log('Downloading latest fabric installer {} from {}'.format(repr(installer_name), installer_url))
 	installer_bytes, _, _ = download(installer_url)
 	with open(installer_name, 'wb') as f:
 		f.write(installer_bytes)
