@@ -2,6 +2,7 @@
 import enum
 import functools
 import os
+import ssl
 import subprocess
 import sys
 import time
@@ -11,6 +12,7 @@ from pathlib import Path
 from typing import Tuple, Optional
 
 import requests
+from requests.auth import HTTPProxyAuth
 
 
 def log(s: str):
@@ -40,14 +42,46 @@ def get_env(name: str, default: Optional[str] = None) -> str:
 		sys.exit(1)
 
 
+def request_get(*args, **kwargs) -> requests.Response:
+	http_proxy = get_env('INSTALLER_HTTP_PROXY', '')
+	if http_proxy:
+		kwargs['proxies'] = {
+			'http': http_proxy,
+			'https': http_proxy,
+		}
+
+	errors = []
+	for i in range(3):
+		try:
+			return requests.get(*args, **kwargs)
+		except (requests.exceptions.ConnectionError, ssl.SSLError) as e:
+			errors.append(e)
+	if len(errors) > 0:
+		log("[ERROR] All requests.get() attempts failed: {}".format(list(map(str, errors))))
+		raise errors[0] from None
+
+
+def bash_call(command: str):
+	http_proxy = get_env('INSTALLER_HTTP_PROXY', '')
+	if http_proxy:
+		env = {
+			**os.environ,
+			'http_proxy': http_proxy,
+			'https_proxy': http_proxy,
+		}
+	else:
+		env = None
+	subprocess.check_call(command, shell=True, env=env)
+
+
 @functools.lru_cache
-def http_get_cached(url: str):
-	return requests.get(url)
+def get_json(url: str):
+	return request_get(url).json()
 
 
 def download(url: str) -> Tuple[bytes, float, float]:
 	buf = BytesIO()
-	response = requests.get(url, stream=True)
+	response = request_get(url, stream=True)
 	total_mb = int(response.headers.get('content-length')) / 1048576
 	downloaded_mb = 0
 	start_time = time.time()
@@ -90,7 +124,7 @@ def prepare():
 
 def get_mc_version() -> str:
 	log('Downloading Minecraft version manifests')
-	version_manifests = http_get_cached('https://launchermeta.mojang.com/mc/game/version_manifest.json').json()
+	version_manifests = get_json('https://launchermeta.mojang.com/mc/game/version_manifest.json')
 	latest_release = version_manifests['latest']['release']
 	latest_snapshot = version_manifests['latest']['snapshot']
 	log('Latest mc release: {}'.format(latest_release))
@@ -114,7 +148,7 @@ def install_vanilla(mc_version: str, server_jar_path: str):
 	log('mc_version: {}'.format(mc_version))
 	log('server_jar_path: {}'.format(server_jar_path))
 
-	version_manifests = http_get_cached('https://launchermeta.mojang.com/mc/game/version_manifest.json').json()
+	version_manifests = get_json('https://launchermeta.mojang.com/mc/game/version_manifest.json')
 	for version in version_manifests['versions']:
 		if version.get('id') == mc_version:
 			manifest_url = version['url']
@@ -124,7 +158,7 @@ def install_vanilla(mc_version: str, server_jar_path: str):
 		sys.exit(1)
 
 	log('Downloading manifest data of mc {} from {}'.format(mc_version, manifest_url))
-	manifest = http_get_cached(manifest_url).json()
+	manifest = get_json(manifest_url)
 	server_url = manifest['downloads']['server']['url']
 
 	log('Downloading mc server jar from {} to {}'.format(server_url, repr(server_jar_path)))
@@ -147,7 +181,7 @@ def install_fabric(mc_version: str):
 	log('loader_version: {}'.format(loader_version))
 	log('server_jar_file: {}'.format(server_jar_file))
 
-	installer_versions = requests.get('https://meta.fabricmc.net/v2/versions/installer').json()
+	installer_versions = get_json('https://meta.fabricmc.net/v2/versions/installer')
 	for version in installer_versions:
 		if version.get('stable', False):
 			installer_url = version['url']
@@ -166,7 +200,7 @@ def install_fabric(mc_version: str):
 	if loader_version != 'latest':
 		command += ' -loader {}'.format(loader_version)
 	log('Installing fabric with command {}'.format(repr(command)))
-	subprocess.check_call(command, shell=True)
+	bash_call(command)
 
 	fabric_server_launcher_properties = 'fabric-server-launcher.properties'
 	log('Setting server jar file name in {}'.format(fabric_server_launcher_properties))
