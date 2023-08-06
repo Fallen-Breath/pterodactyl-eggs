@@ -60,7 +60,15 @@ def download(url: str) -> Tuple[bytes, float, float]:
 
 		if now - last_report >= 5:
 			percent = (downloaded_mb / max(total_mb, 1)) * 100
-			log(f'  {downloaded_mb:.2f}MB / {total_mb:.2f}MB, {percent:.2f}%')
+			if percent > 0:
+				eta_sec = (now - start_time) / percent * (1 - percent)
+				if eta_sec > 60:
+					eta = f'{eta_sec / 60:.2f}min'
+				else:
+					eta = f'{eta_sec:.2f}s'
+			else:
+				eta = 'N/A'
+			log(f'  {downloaded_mb:.2f}MB / {total_mb:.2f}MB, {percent:.2f}%, ETA {eta}')
 			last_report = now
 
 	return buf.getvalue(), downloaded_mb, time.time() - start_time
@@ -74,7 +82,7 @@ def prepare():
 		sys.exit(1)
 	switch_cwd(working_dir)
 
-	log('touching INSTALLATION_MARK')
+	log('Touching INSTALLATION_MARK for start_hook')
 	Path('INSTALLATION_MARK').touch(exist_ok=True)
 
 	switch_cwd(working_dir / 'server')
@@ -115,11 +123,11 @@ def install_vanilla(mc_version: str, server_jar_path: str):
 		log('[ERROR] Cannot find version {}'.format(mc_version))
 		sys.exit(1)
 
-	log('Downloading manifest data of {} from {}'.format(mc_version, manifest_url))
+	log('Downloading manifest data of mc {} from {}'.format(mc_version, manifest_url))
 	manifest = http_get_cached(manifest_url).json()
 	server_url = manifest['downloads']['server']['url']
 
-	log('Downloading server jar from {} to {}'.format(server_url, repr(server_jar_path)))
+	log('Downloading mc server jar from {} to {}'.format(server_url, repr(server_jar_path)))
 	server_jar_bytes, downloaded_mb, cost = download(server_url)
 	log(f'Download complete, time cost {cost:.2f}s, {downloaded_mb / cost:.2f}MB/s')
 	with open(server_jar_path, 'wb') as f:
@@ -160,13 +168,14 @@ def install_fabric(mc_version: str):
 	log('Installing fabric with command {}'.format(repr(command)))
 	subprocess.check_call(command, shell=True)
 
-	log('Setting server jar file name in {}'.format(server_jar_file))
-	with open('fabric-server-launcher.properties', 'w', encoding='utf8') as f:
+	fabric_server_launcher_properties = 'fabric-server-launcher.properties'
+	log('Setting server jar file name in {}'.format(fabric_server_launcher_properties))
+	with open(fabric_server_launcher_properties, 'w', encoding='utf8') as f:
 		f.write('serverJar={}\n'.format(vanilla_server_jar))
 
-	fabric_server_launcher_jar = 'fabric-server-launcher.jar'
+	fabric_server_launcher_jar = 'fabric-server-launch.jar'  # hardcoded
 	if server_jar_file != fabric_server_launcher_jar:
-		log('Renaming {} to $SERVER_JARFILE={}'.format(fabric_server_launcher_jar, server_jar_file))
+		log('Renaming {} to $SERVER_JARFILE={}'.format(repr(fabric_server_launcher_jar), repr(server_jar_file)))
 		os.rename(fabric_server_launcher_jar, server_jar_file)
 
 

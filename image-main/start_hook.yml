@@ -1,10 +1,12 @@
 install:
   permission.yml:
     owner: null
+    # it's useless to check update inside an image
+    check_update: false
 
 pre_start:
   config.yml:
+    working_directory: server
     start_command: '${MCDR_START_COMMAND}'
     handler: '${MCDR_HANDLER}'
-    check_update: false  # it's useless to check update inside an image
     advanced_console: false  # no tty environment
