@@ -1,0 +1,110 @@
+meta:
+  version: PTDL_v2
+  update_url:
+name: Fabric
+author: 791125833@qq.com
+description: Fabric Minecraft with MCDReforged
+features:
+docker_images:
+  Java 17 + Python3.9 + MCDR 最新版: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-17-latest
+  Java 8 + Python3.9 + MCDR 最新版: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-8-latest
+  Java 17 + Python3.9 + MCDR 2.10: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-17-2.10
+  Java 8 + Python3.9 + MCDR 2.10: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-8-2.10
+file_denylist: []
+startup: python3 -m mcdreforged
+config:
+  files: |-
+    {
+        "server/server.properties": {
+            "parser": "properties",
+            "find": {
+                "server-ip": "0.0.0.0",
+                "server-port": "{{server.build.default.port}}",
+                "query.port": "{{server.build.default.port}}"
+            }
+        }
+    }
+  startup: |-
+    {
+        "done": ")! For help, type "
+    }
+  logs: '{}'
+  stop: stop
+scripts:
+  installation:
+    script: |-
+      #!/bin/bash
+
+      set -e
+      python3 /minecraft_installer.py fabric
+    container: fallenbreath/pterodactyl-installer:bullseye-17
+    entrypoint: bash
+variables:
+- name: 服务器 Jar 文件
+  description: 用于运行服务器的服务器核心文件名称。
+  env_variable: SERVER_JARFILE
+  default_value: fabric-server-launch.jar
+  user_viewable: true
+  user_editable: false
+  rules: required|regex:/^([\w\d._-]+)(\.jar)$/
+  field_type: text
+- name: Minecraft 版本
+  description: 要安装的 Minecraft 服务端版本。使用 "latest" 将安装最新版本，或使用 "snapshot" 安装最新快照版本。转到设置 > 重新安装服务器以应用此次更改。
+  env_variable: MC_VERSION
+  default_value: latest
+  user_viewable: true
+  user_editable: true
+  rules: required|string|between:3,15
+  field_type: text
+
+- name: Fabric Loader 版本
+  description: Fabric Loader 的版本。使用 "latest" 将安装最新版本
+  env_variable: FABRIC_LOADER_VERSION
+  default_value: latest
+  user_viewable: true
+  user_editable: true
+  rules: required|string|max:20
+  field_type: text
+
+- name: MCDR 服务端处理器
+  description: |-
+    MCDR 配置文件中的 handler 选项的值。
+
+    参考文档：https://mcdreforged.readthedocs.io/zh_CN/latest/configuration.html#handler。
+  env_variable: MCDR_HANDLER
+  default_value: vanilla_handler
+  user_viewable: true
+  user_editable: false
+  rules: required|regex:/^[a-zA-Z0-9_]+$/
+  field_type: text
+- name: MCDR 服务器启动指令
+  description: |-
+    MCDR 配置文件中的 start_command 选项的值。
+    其值是为一条 bash 指令，因此可以在其中使用 bash 的语法引用其他的环境变量。
+
+    参考文档：https://mcdreforged.readthedocs.io/zh_CN/latest/configuration.html#start-command。
+  env_variable: MCDR_START_COMMAND
+  default_value: java -Xms128M -XX:MaxRAMPercentage=95.0 -Dfile.encoding=UTF-8 -jar $SERVER_JARFILE
+  user_viewable: true
+  user_editable: false
+  rules: required
+  field_type: text
+
+- name: 安装脚本 HTTP 代理地址
+  description: |-
+    可选变量，安装脚本中下载文件所使用的 HTTP 代理的地址。
+    例子：127.0.0.1:1081、http://username:password@127.0.0.1:1081。
+  env_variable: INSTALLER_HTTP_PROXY
+  default_value: ''
+  user_viewable: false
+  user_editable: false
+  rules: required|string
+  field_type: text
+- name: start_hook.py 调试开关
+  description: 调试用，start_hook.py 的日志开关。将其设为 true 以开启调试输出。
+  env_variable: DEBUG_START_HOOK
+  default_value: 'false'
+  user_viewable: false
+  user_editable: false
+  rules: required|in:false,true
+  field_type: text

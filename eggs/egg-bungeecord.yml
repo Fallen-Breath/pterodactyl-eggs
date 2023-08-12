@@ -1,0 +1,105 @@
+meta:
+  version: PTDL_v2
+  update_url:
+name: Bungeecord
+author: 791125833@qq.com
+description: Bungeecord with MCDReforged
+features:
+docker_images:
+  Java 17 + Python3.9 + MCDR 最新版: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-17-latest
+  Java 8 + Python3.9 + MCDR 最新版: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-8-latest
+  Java 17 + Python3.9 + MCDR 2.10: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-17-2.10
+  Java 8 + Python3.9 + MCDR 2.10: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-8-2.10
+file_denylist: []
+startup: python3 -m mcdreforged
+config:
+  files: |-
+    {
+        "server/config.yml": {
+            "parser": "yaml",
+            "find": {
+                "listeners[0].query_port": "{{server.build.default.port}}",
+                "listeners[0].host": "0.0.0.0:{{server.build.default.port}}",
+                "servers.*.address": {
+                    "regex:^(127\\.0\\.0\\.1|localhost)(:\\d{1,5})?$": "{{config.docker.interface}}$2"
+                }
+            }
+        }
+    }
+  startup: |-
+    {
+        "done": "Listening on "
+    }
+  logs: '{}'
+  stop: end
+scripts:
+  installation:
+    script: |-
+      #!/bin/bash
+
+      set -e
+      python3 /minecraft_installer.py bungeecord
+    container: fallenbreath/pterodactyl-installer:bullseye-17
+    entrypoint: bash
+variables:
+- name: 服务器 Jar 文件
+  description: 用于运行服务器的服务器核心文件名称。
+  env_variable: SERVER_JARFILE
+  default_value: bungeecord.jar
+  user_viewable: true
+  user_editable: true
+  rules: required|regex:/^([\w\d._-]+)(\.jar)$/
+  field_type: text
+- name: Bungeecord 构建版本号
+  description: |-
+    Bungeecord 版本的构建版本号。
+
+    如果设置为 latest 将安装最新版本。无效版本将默认为最新版本。
+  env_variable: BUILD_NUMBER
+  default_value: latest
+  user_viewable: false
+  user_editable: true
+  rules: required|string
+  field_type: text
+- name: MCDR 服务端处理器
+  description: |-
+    MCDR 配置文件中的 handler 选项的值。
+
+    参考文档：https://mcdreforged.readthedocs.io/zh_CN/latest/configuration.html#handler。
+  env_variable: MCDR_HANDLER
+  default_value: bungeecord_handler
+  user_viewable: true
+  user_editable: false
+  rules: required|regex:/^[a-zA-Z0-9_]+$/
+  field_type: text
+- name: MCDR 服务器启动指令
+  description: |-
+    MCDR 配置文件中的 start_command 选项的值。
+    其值是为一条 bash 指令，因此可以在其中使用 bash 的语法引用其他的环境变量。
+
+    参考文档：https://mcdreforged.readthedocs.io/zh_CN/latest/configuration.html#start-command。
+  env_variable: MCDR_START_COMMAND
+  default_value: java -Xms128M -XX:MaxRAMPercentage=95.0 -Dfile.encoding=UTF-8 -Djline.terminal=jline.UnsupportedTerminal -jar $SERVER_JARFILE
+  user_viewable: true
+  user_editable: false
+  rules: required
+  field_type: text
+
+- name: 安装脚本 HTTP 代理地址
+  description: |-
+    可选变量，安装脚本中下载文件所使用的 HTTP 代理的地址。
+    例子：127.0.0.1:1081、http://username:password@127.0.0.1:1081。
+  env_variable: INSTALLER_HTTP_PROXY
+  default_value: ''
+  user_viewable: false
+  user_editable: false
+  rules: required|string
+  field_type: text
+- name: start_hook.py 调试开关
+  description: 调试用，start_hook.py 的日志开关。将其设为 true 以开启调试输出。
+  env_variable: DEBUG_START_HOOK
+  default_value: 'false'
+  user_viewable: false
+  user_editable: false
+  rules: required|in:false,true
+  field_type: text

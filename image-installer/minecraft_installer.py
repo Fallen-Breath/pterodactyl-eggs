@@ -329,7 +329,8 @@ def main():
 	prepare()
 
 	if server_type == ServerType.NONE:
-		log('Doing nothing server_type none')
+		log('Doing nothing with server_type none')
+		log('You need to setup the server yourself')
 
 	elif server_type == ServerType.VANILLA:
 		install_vanilla(get_mc_version(), get_env('SERVER_JARFILE'))
