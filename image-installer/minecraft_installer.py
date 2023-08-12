@@ -31,7 +31,7 @@ class MyFormatter(logging.Formatter):
 logger = logging.Logger('INSTALL')
 __handler = logging.StreamHandler(sys.stdout)
 __handler.setLevel(logging.INFO)
-__handler.setFormatter(MyFormatter('[%(name)s] [%(asctime)s %(levelname)s] %(message)s'))
+__handler.setFormatter(MyFormatter('[%(name)s] [%(asctime)s %(levelname)s] %(message)s', datefmt='%H:%M:%S'))
 logger.addHandler(__handler)
 
 
