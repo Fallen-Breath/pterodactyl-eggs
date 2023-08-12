@@ -112,6 +112,19 @@ def download(url: str) -> Tuple[bytes, float, float]:
 	return buf.getvalue(), downloaded_mb, time.time() - start_time
 
 
+def download_to(name: str, url: str, file_path: str):
+	log('Downloading {} from {} to {}'.format(name, url, repr(file_path)))
+	buf, downloaded_mb, cost = download(url)
+	log(f'Download complete, time cost {cost:.2f}s, {downloaded_mb / cost:.2f}MB/s')
+
+	file_dir = os.path.dirname(file_path)
+	if len(file_dir) > 0:
+		os.makedirs(file_dir, exist_ok=True)
+	with open(file_path, 'wb') as f:
+		f.write(buf)
+	log('Written {} to file'.format(repr(file_path)))
+
+
 def prepare():
 	# Server Files: /mnt/server
 	working_dir = Path('/mnt/server')
@@ -165,15 +178,7 @@ def install_vanilla(mc_version: str, server_jar_path: str):
 	manifest = get_json(manifest_url)
 	server_url = manifest['downloads']['server']['url']
 
-	log('Downloading mc server jar from {} to {}'.format(server_url, repr(server_jar_path)))
-	server_jar_bytes, downloaded_mb, cost = download(server_url)
-	log(f'Download complete, time cost {cost:.2f}s, {downloaded_mb / cost:.2f}MB/s')
-	server_jar_dir = os.path.dirname(server_jar_path)
-	if len(server_jar_dir) > 0:
-		os.makedirs(server_jar_dir, exist_ok=True)
-	with open(server_jar_path, 'wb') as f:
-		f.write(server_jar_bytes)
-	log('Saved server jar to {}'.format(repr(server_jar_path)))
+	download_to('mc server jar', server_url, server_jar_path)
 
 
 def install_fabric():
@@ -254,13 +259,49 @@ def install_paper():
 		log('using latest build num: {}'.format(repr(build_num)))
 
 	download_url = f'https://api.papermc.io/v2/projects/paper/versions/{mc_version}/builds/{build_num}/downloads/paper-{mc_version}-{build_num}.jar'
-	log('Downloading paper server jar from {} to {}'.format(download_url, repr(server_jar_path)))
-	server_jar_bytes, downloaded_mb, cost = download(download_url)
-	log(f'Download complete, time cost {cost:.2f}s, {downloaded_mb / cost:.2f}MB/s')
-	with open(server_jar_path, 'wb') as f:
-		f.write(server_jar_bytes)
+	download_to('paper server jar', download_url, server_jar_path)
 
 	install_vanilla(mc_version, 'cache/mojang_{}.jar'.format(mc_version))
+
+
+def install_bungeecord():
+	# ================================================================
+	title('Installing Bungeecord')
+	build_num = get_env('BUILD_NUMBER', 'latest')
+	server_jar_path = get_env('SERVER_JARFILE')
+	log('build_num: {}'.format(build_num))
+	log('server_jar_path: {}'.format(server_jar_path))
+
+	data = get_json(f'https://ci.md-5.net/job/Bungeecord/api/json')
+	builds = data['builds']
+	if len(builds) == 0:
+		log('[ERROR] build num list is empty')
+		sys.exit(1)
+	build_map = {b['number']: b for b in builds}
+	build_nums = list(build_map.keys())
+	if build_num != 'latest' and build_num not in map(str, build_nums):
+		log('[WARN] given bungeecord build {} not found, use latest build'.format(repr(build_num)))
+		build_num = 'latest'
+	if build_num == 'latest':
+		build_num = max(map(int, build_nums))
+		log('using latest build num: {}'.format(repr(build_num)))
+
+	data = get_json(build_map[build_num]['url'] + 'api/json')
+	if len(data['artifacts']) == 0:
+		log('[ERROR] empty artifact for build {}'.format(build_num))
+		return
+
+	for artifact in data['artifacts']:
+		path = artifact['relativePath']
+		url = f'{data["url"]}artifact/{path}'
+		file_name = artifact['fileName']
+		log('found artifact {} for build {}'.format(repr(file_name), build_num))
+		if 'bungeecord' in file_name.lower():
+			file_path = server_jar_path
+		else:
+			file_path = os.path.join('modules', file_name)
+
+		download_to(file_name, url, file_path)
 
 
 class ServerType(enum.Enum):
@@ -268,11 +309,12 @@ class ServerType(enum.Enum):
 	VANILLA = enum.auto()
 	FABRIC = enum.auto()
 	PAPER = enum.auto()
+	BUNGEECORD = enum.auto()
 
 
 def main():
 	parser = ArgumentParser()
-	parser.add_argument('server_type', help='Supported server types: none, vanilla, fabric')
+	parser.add_argument('server_type', help='Supported server types: {}'.format(', '.join(map(lambda st: st.name.lower(), ServerType))))
 	args = parser.parse_args()
 
 	# ================================================================
@@ -300,6 +342,9 @@ def main():
 
 	elif server_type == ServerType.PAPER:
 		install_paper()
+
+	elif server_type == ServerType.BUNGEECORD:
+		install_bungeecord()
 
 	else:
 		raise RuntimeError('Unhandled server type {}'.format(server_type))
