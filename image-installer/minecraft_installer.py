@@ -31,11 +31,12 @@ def switch_cwd(path: Path):
 	os.chdir(path)
 
 
-def get_env(name: str, default: Optional[str] = None) -> str:
+def get_env(name: str, default: Optional[str] = None, warn_if_missing: bool = True) -> str:
 	if name in os.environ:
 		return os.environ[name]
 	elif default is not None:
-		log('[WARN] Environment variable {} unset, using default value {}'.format(repr(name), repr(default)))
+		if warn_if_missing:
+			log('[WARN] Environment variable {} unset, using default value {}'.format(repr(name), repr(default)))
 		return default
 	else:
 		log("[ERROR] Environment variable {} unset, and it's required".format(repr(name)))
@@ -43,7 +44,7 @@ def get_env(name: str, default: Optional[str] = None) -> str:
 
 
 def request_get(*args, **kwargs) -> requests.Response:
-	http_proxy = get_env('INSTALLER_HTTP_PROXY', '')
+	http_proxy = get_env('INSTALLER_HTTP_PROXY', '', warn_if_missing=False)
 	if http_proxy:
 		kwargs['proxies'] = {
 			'http': http_proxy,
@@ -65,7 +66,7 @@ def request_get(*args, **kwargs) -> requests.Response:
 
 
 def bash_call(command: str):
-	http_proxy = get_env('INSTALLER_HTTP_PROXY', '')
+	http_proxy = get_env('INSTALLER_HTTP_PROXY', '', warn_if_missing=False)
 	if http_proxy:
 		env = {
 			**os.environ,
@@ -167,13 +168,17 @@ def install_vanilla(mc_version: str, server_jar_path: str):
 	log('Downloading mc server jar from {} to {}'.format(server_url, repr(server_jar_path)))
 	server_jar_bytes, downloaded_mb, cost = download(server_url)
 	log(f'Download complete, time cost {cost:.2f}s, {downloaded_mb / cost:.2f}MB/s')
+	server_jar_dir = os.path.dirname(server_jar_path)
+	if len(server_jar_dir) > 0:
+		os.makedirs(server_jar_dir, exist_ok=True)
 	with open(server_jar_path, 'wb') as f:
 		f.write(server_jar_bytes)
 	log('Saved server jar to {}'.format(repr(server_jar_path)))
 
 
-def install_fabric(mc_version: str):
+def install_fabric():
 	vanilla_server_jar = 'minecraft_server.jar'
+	mc_version = get_mc_version()
 	install_vanilla(mc_version, vanilla_server_jar)
 
 	# ================================================================
@@ -216,10 +221,53 @@ def install_fabric(mc_version: str):
 		os.rename(fabric_server_launcher_jar, server_jar_file)
 
 
+def install_paper():
+	# ================================================================
+	title('Installing Paper')
+	mc_version = get_env('MC_VERSION')
+	build_num = get_env('BUILD_NUMBER', 'latest')
+	server_jar_path = get_env('SERVER_JARFILE')
+	log('mc_version: {}'.format(mc_version))
+	log('build_num: {}'.format(build_num))
+	log('server_jar_path: {}'.format(server_jar_path))
+
+	supported_mc_versions = get_json('https://api.papermc.io/v2/projects/paper').get('versions', [])
+	if len(supported_mc_versions) == 0:
+		log('[ERROR] supported_mc_versions is empty')
+		sys.exit(1)
+	if mc_version != 'latest' and mc_version not in supported_mc_versions:
+		log('[WARN] given mc version {} is unsupported, use latest version'.format(repr(mc_version)))
+		mc_version = 'latest'
+	if mc_version == 'latest':
+		mc_version = supported_mc_versions[-1]
+		log('using latest supported mc version: {}'.format(repr(mc_version)))
+
+	builds = get_json(f'https://api.papermc.io/v2/projects/paper/versions/{mc_version}').get('builds', [])
+	if len(supported_mc_versions) == 0:
+		log('[ERROR] builds for mc {} is empty'.format(repr(mc_version)))
+		sys.exit(1)
+	if build_num != 'latest' and build_num not in map(str, builds):
+		log('[WARN] given paper build {} not found for mc {}, use latest build'.format(repr(build_num), repr(mc_version)))
+		build_num = 'latest'
+	if build_num == 'latest':
+		build_num = max(builds)
+		log('using latest build num: {}'.format(repr(build_num)))
+
+	download_url = f'https://api.papermc.io/v2/projects/paper/versions/{mc_version}/builds/{build_num}/downloads/paper-{mc_version}-{build_num}.jar'
+	log('Downloading paper server jar from {} to {}'.format(download_url, repr(server_jar_path)))
+	server_jar_bytes, downloaded_mb, cost = download(download_url)
+	log(f'Download complete, time cost {cost:.2f}s, {downloaded_mb / cost:.2f}MB/s')
+	with open(server_jar_path, 'wb') as f:
+		f.write(server_jar_bytes)
+
+	install_vanilla(mc_version, 'cache/mojang_{}.jar'.format(mc_version))
+
+
 class ServerType(enum.Enum):
 	NONE = enum.auto()
 	VANILLA = enum.auto()
 	FABRIC = enum.auto()
+	PAPER = enum.auto()
 
 
 def main():
@@ -248,7 +296,10 @@ def main():
 		# Renames:
 		# fabric-server-launcher.jar -> ${SERVER_JARFILE}
 		# vanilla_server.jar -> 'minecraft_server.jar' (hardcoded)
-		install_fabric(get_mc_version())
+		install_fabric()
+
+	elif server_type == ServerType.PAPER:
+		install_paper()
 
 	else:
 		raise RuntimeError('Unhandled server type {}'.format(server_type))
