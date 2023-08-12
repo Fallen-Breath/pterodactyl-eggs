@@ -93,7 +93,7 @@ variables:
   default_value: ''
   user_viewable: false
   user_editable: false
-  rules: required|string
+  rules: nullable|string
   field_type: text
 - name: start_hook.py 调试开关
   description: 调试用，start_hook.py 的日志开关。将其设为 true 以开启调试输出。
