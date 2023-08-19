@@ -19,7 +19,7 @@ def cmd_build(args: argparse.Namespace) -> int:
 
 			if args.http_proxy:
 				for variable in data['variables']:
-					if variable['INSTALLER_HTTP_PROXY']:
+					if variable['env_variable'] == 'INSTALLER_HTTP_PROXY':
 						variable['default_value'] = args.http_proxy
 
 			file_name_base = file_name.rsplit('.', 1)[0]
