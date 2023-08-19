@@ -1,5 +1,8 @@
-Get egg json to import to pterodactyl
+## Cheatsheet
+
+generate egg json to import to pterodactyl
 
 ```bash
-find . -name "*.yml" | xargs -L 1 ./y2j.py -i
+./tool.py build
+./tool.py build --http-proxy="http://127.0.0.1:1081"
 ```
