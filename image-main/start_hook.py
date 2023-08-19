@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import re
+import shutil
 import subprocess
 
 from ruamel.yaml import YAML
@@ -69,6 +70,32 @@ def apply_modification(phase: str):
 			log('No modification was actually made on file {}'.format(repr(file_path)))
 
 
+def move_minecraft_eula():
+	eula_file_name = 'eula.txt'
+	if not os.path.isfile(eula_file_name):
+		return
+
+	log('eula file {} detected'.format(repr(eula_file_name)))
+
+	with open(eula_file_name, 'r') as f:
+		for line in f.read().splitlines():
+			if re.fullmatch(r'eula\s*=\s*true', line):
+				break
+		else:
+			# not a valid eula file
+			log('not a valid eula file, ignoring')
+			return
+
+	# move it to the MCDR working directory dir
+	working_directory = read_yaml(MCDR_CONFIG_FILE).get('working_directory', 'server')
+	dest_path = os.path.join(working_directory, eula_file_name)
+	if os.path.isdir(working_directory):
+		shutil.move(eula_file_name, dest_path)
+		log('moved {} to {}'.format(repr(eula_file_name), repr(dest_path)))
+	else:
+		log('MCDR working directory {} not found'.format(repr(working_directory)))
+
+
 def main():
 	global config
 	config = read_yaml(CONFIG_FILE)
@@ -84,6 +111,8 @@ def main():
 		os.remove(INSTALLATION_MARK)
 
 	apply_modification('pre_start')
+	move_minecraft_eula()
+	
 	log('Done')
 
 

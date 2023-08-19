@@ -5,6 +5,9 @@ name: Fabric
 author: 791125833@qq.com
 description: Fabric Minecraft with MCDReforged
 features:
+- eula
+- java_version
+- pid_limit
 docker_images:
   Java 17 + Python3.9 + MCDR 最新版: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-17-latest
   Java 8 + Python3.9 + MCDR 最新版: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-8-latest
