@@ -87,7 +87,7 @@ variables:
 
     参考文档：https://mcdreforged.readthedocs.io/zh_CN/latest/configuration.html#start-command。
   env_variable: MCDR_START_COMMAND
-  default_value: 'java -Xms128M -XX:MaxRAM=${SERVER_MEMORY}M -Xmx$(( SERVER_MEMORY <= 2048 ? SERVER_MEMORY*3/4 : (SERVER_MEMORY*11-4096)/12 ))M -jar ${SERVER_JARFILE}'
+  default_value: 'java -Xms128M -XX:MaxRAM=${SERVER_MEMORY}M -Xmx$(( SERVER_MEMORY <= 2048 ? SERVER_MEMORY*3/4 : (SERVER_MEMORY*7-2048)/8 ))M -jar ${SERVER_JARFILE}'
   user_viewable: true
   user_editable: false
   rules: required
