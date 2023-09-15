@@ -9,10 +9,10 @@ features:
 - java_version
 - pid_limit
 docker_images:
-  Java 17 + Python3.9 + MCDR 最新版: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-17-latest
-  Java 8 + Python3.9 + MCDR 最新版: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-8-latest
-  Java 17 + Python3.9 + MCDR 2.10: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-17-2.10
-  Java 8 + Python3.9 + MCDR 2.10: docker.io/fallenbreath/pterodactyl-mc-mcdr:bullseye-8-2.10
+  Java 17 + Python3.9 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-bullseye-17-latest
+  Java 8 + Python3.9 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-bullseye-8-latest
+  Java 17 + Python3.9 + MCDR 2.10: fallenbreath/pterodactyl-yolks:minecraft-runtime-bullseye-17-2.10
+  Java 8 + Python3.9 + MCDR 2.10: fallenbreath/pterodactyl-yolks:minecraft-runtime-bullseye-8-2.10
 file_denylist: []
 startup: python3 -m mcdreforged
 config:
@@ -40,7 +40,7 @@ scripts:
 
       set -e
       python3 /minecraft_installer.py vanilla
-    container: fallenbreath/pterodactyl-installer:bullseye-17
+    container: fallenbreath/pterodactyl-yolks:minecraft-installer-bullseye-17
     entrypoint: bash
 variables:
 - name: 服务器 Jar 文件

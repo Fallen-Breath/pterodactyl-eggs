@@ -9,7 +9,7 @@ for SYS in "bullseye" "slim-bullseye"; do
       else
         MCDR_REQUIREMENT="mcdreforged~=${MCDR}"
       fi
-      TAG="fallenbreath/pterodactyl-mc-mcdr:${SYS}-${JAVA}-${MCDR}"
+      TAG="fallenbreath/pterodactyl-yolks:minecraft-runtime-${SYS}-${JAVA}-${MCDR}"
       echo "======== System: $SYS, Java: $JAVA, MCDR: $MCDR, Tag: $TAG ========"
 
       docker build "$(pwd)" \
