@@ -9,7 +9,7 @@ from ruamel.yaml import YAML, RoundTripRepresenter
 
 def cmd_build(args: argparse.Namespace) -> int:
 	for dir_path, dir_names, file_names in os.walk(args.input):
-		for file_name in file_names + dir_names:
+		for file_name in file_names:
 			if not file_name.endswith('.yml'):
 				continue
 
@@ -26,8 +26,9 @@ def cmd_build(args: argparse.Namespace) -> int:
 						variable['default_value'] = args.http_proxy
 
 			file_name_base = file_name.rsplit('.', 1)[0]
-			os.makedirs(args.output, exist_ok=True)
-			with open(os.path.join(args.output, file_name_base + '.json'), 'w', encoding='utf8') as f:
+			output_path = os.path.join(args.output, dir_path)
+			os.makedirs(output_path, exist_ok=True)
+			with open(os.path.join(output_path, file_name_base + '.json'), 'w', encoding='utf8') as f:
 				json.dump(data, f, indent=4)
 
 	return 0
