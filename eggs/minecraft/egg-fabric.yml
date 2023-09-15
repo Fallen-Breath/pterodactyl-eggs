@@ -1,9 +1,9 @@
 meta:
   version: PTDL_v2
   update_url:
-name: Vanilla
-author: 791125833@qq.com
-description: Vanilla Minecraft with MCDReforged
+name: Fabric
+author: nellaforax@foxmail.com
+description: Fabric Minecraft with MCDReforged
 features:
 - eula
 - java_version
@@ -39,16 +39,16 @@ scripts:
       #!/bin/bash
 
       set -e
-      python3 /minecraft_installer.py vanilla
+      python3 /minecraft_installer.py fabric
     container: fallenbreath/pterodactyl-installer:bullseye-17
     entrypoint: bash
 variables:
 - name: 服务器 Jar 文件
   description: 用于运行服务器的服务器核心文件名称。
   env_variable: SERVER_JARFILE
-  default_value: server.jar
+  default_value: fabric-server-launch.jar
   user_viewable: true
-  user_editable: true
+  user_editable: false
   rules: required|regex:/^([\w\d._-]+)(\.jar)$/
   field_type: text
 - name: Minecraft 版本
@@ -58,6 +58,15 @@ variables:
   user_viewable: true
   user_editable: true
   rules: required|string|between:3,15
+  field_type: text
+
+- name: Fabric Loader 版本
+  description: Fabric Loader 的版本。使用 "latest" 将安装最新版本
+  env_variable: FABRIC_LOADER_VERSION
+  default_value: latest
+  user_viewable: true
+  user_editable: true
+  rules: required|string|max:20
   field_type: text
 
 - name: MCDR 服务端处理器
@@ -78,7 +87,7 @@ variables:
 
     参考文档：https://mcdreforged.readthedocs.io/zh_CN/latest/configuration.html#start-command。
   env_variable: MCDR_START_COMMAND
-  default_value: 'java -Xms128M -XX:MaxRAM=${SERVER_MEMORY}M -Xmx$(( SERVER_MEMORY <= 2048 ? SERVER_MEMORY*3/4 : (SERVER_MEMORY*7-2048)/8 ))M -jar $SERVER_JARFILE'
+  default_value: 'java -Xms128M -XX:MaxRAM=${SERVER_MEMORY}M -Xmx$(( SERVER_MEMORY <= 2048 ? SERVER_MEMORY*3/4 : (SERVER_MEMORY*7-2048)/8 ))M -jar ${SERVER_JARFILE}'
   user_viewable: true
   user_editable: false
   rules: required

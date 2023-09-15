@@ -8,9 +8,12 @@ from ruamel.yaml import YAML, RoundTripRepresenter
 
 
 def cmd_build(args: argparse.Namespace) -> int:
-	for file_name in os.listdir(args.input):
-		if file_name.endswith('.yml'):
-			with open(file_name, encoding='utf8') as f:
+	for dir_path, dir_names, file_names in os.walk(args.input):
+		for file_name in file_names + dir_names:
+			if not file_name.endswith('.yml'):
+				continue
+
+			with open(os.path.join(dir_path, file_name), encoding='utf8') as f:
 				try:
 					data = YAML().load(f)
 				except ValueError as e:
@@ -23,7 +26,8 @@ def cmd_build(args: argparse.Namespace) -> int:
 						variable['default_value'] = args.http_proxy
 
 			file_name_base = file_name.rsplit('.', 1)[0]
-			with open(file_name_base + '.json', 'w', encoding='utf8') as f:
+			os.makedirs(args.output, exist_ok=True)
+			with open(os.path.join(args.output, file_name_base + '.json'), 'w', encoding='utf8') as f:
 				json.dump(data, f, indent=4)
 
 	return 0
@@ -63,7 +67,9 @@ def main():
 	subparsers = parser.add_subparsers(title='Command', dest='command')
 
 	parser_build = subparsers.add_parser('build', help='build the egg jsons')
-	parser_build.add_argument('-i', '--input', help='Input Directory. Default: current dir', required=False, default='.')
+	parser_build.add_argument('-i', '--input', help='Input directory. Default: current dir', required=False, default='.')
+	parser_build.add_argument('-r', '--recursive', action='store_true', help='Process the input directory recursively')
+	parser_build.add_argument('-o', '--output', help='The output directory. Default: ./output', required=False, default='./output')
 	parser_build.add_argument('--http-proxy', help='The default value of INSTALLER_HTTP_PROXY')
 
 	parser_y2j = subparsers.add_parser('y2j', help='tool for conversion between json and yaml')
