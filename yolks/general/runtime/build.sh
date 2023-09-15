@@ -1,9 +1,11 @@
 #!/bin/bash
 
 set -e
-TAG="fallenbreath/pterodactyl-yolks:general-runtime-debian"
+for SYS in "debian" "alpine"; do
+  TAG="fallenbreath/pterodactyl-yolks:general-runtime-${SYS}"
 
-docker build "$(pwd)" -t "$TAG"
-if [ $# == 1 ] && [ "$1" == "-p" ]; then
-  docker push $TAG
-fi
+  docker build "$(pwd)" -t "$TAG" -f "Dockerfile-${SYS}"
+  if [ $# == 1 ] && [ "$1" == "-p" ]; then
+    docker push "$TAG"
+  fi
+done

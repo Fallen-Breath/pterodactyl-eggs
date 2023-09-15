@@ -1,0 +1,10 @@
+FROM alpine:latest
+
+RUN apk add --update --no-cache tzdata envsubst \
+    && adduser -h /home/container -D container
+USER container
+ENV USER=container HOME=/home/container
+
+WORKDIR /home/container
+COPY ./entrypoint.sh /
+CMD ["/bin/ash", "/entrypoint.sh"]

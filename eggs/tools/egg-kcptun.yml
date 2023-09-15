@@ -1,0 +1,74 @@
+meta:
+  version: PTDL_v2
+  update_url:
+name: kcptun
+author: nellaforax@foxmail.com
+description: https://github.com/xtaci/kcptun
+features:
+docker_images:
+  alpine: fallenbreath/pterodactyl-yolks:general-runtime-alpine
+file_denylist: []
+startup: ${START_COMMAND}
+config:
+  files: |-
+    {
+        "config.json": {
+            "parser": "json",
+            "find": {
+                "listen": ":{{server.build.default.port}}",
+                "target": {
+                    "regex:^(127\\.0\\.0\\.1|localhost)(:\\d{1,5})?$": "{{config.docker.interface}}$2"
+                }
+            }
+        }
+    }
+  startup: |-
+    {
+        "done": "listening on: "
+    }
+  logs: '{}'
+  stop: '^^C'
+scripts:
+  installation:
+    script: |-
+      set -e
+      version=${KCPTUN_VERSION}
+      
+      echo "Downloading kcptun v${version}"
+      wget "https://ghproxy.com/https://github.com/xtaci/kcptun/releases/download/v${version}/kcptun-linux-amd64-${version}.tar.gz"
+      tar -zxvf "kcptun-linux-amd64-${version}.tar.gz" -C /mnt/server
+      
+      cat << EOF > /mnt/server/config.json
+      {
+        "listen": ":12948",
+        "target": "127.0.0.1:8080",
+        "key": "password",
+        "crypt": "aes",
+        "mode": "fast"
+      }
+      EOF
+    container: fallenbreath/pterodactyl-yolks:general-installer-alpine
+    entrypoint: ash
+variables:
+- name: 启动指令
+  description: |-
+    kcptun的启动指令。
+    
+    其中，client为kcptun的客户端二进制，server为kcptun的服务端二进制。
+  env_variable: START_COMMAND
+  default_value: ./server_linux_amd64 -c config.json
+  user_viewable: true
+  user_editable: true
+  rules: required
+  field_type: text
+- name: kcptun版本
+  description: |-
+    kcptun的版本。不带v前缀。
+    
+    见https://github.com/xtaci/kcptun/releases
+  env_variable: KCPTUN_VERSION
+  default_value: '20230811'
+  user_viewable: true
+  user_editable: true
+  rules: required|string|max:20
+  field_type: text
