@@ -58,7 +58,10 @@ def cmd_y2j(args: argparse.Namespace) -> int:
 
 	file_name = args.output or args.input.rsplit('.', 1)[0] + ('.yml' if get(args.input) == json else '.json')
 	with open(file_name, 'w', encoding='utf8') as f:
-		get(file_name).dump(data, f, indent=4)
+		kwargs = {}
+		if get(file_name) == json:
+			kwargs['indent'] = 4
+		get(file_name).dump(data, f, **kwargs)
 
 	return 0
 
@@ -82,6 +85,9 @@ def main():
 		return cmd_build(args)
 	elif args.command == 'y2j':
 		return cmd_y2j(args)
+	elif args.command is None:
+		parser.print_help()
+		return 0
 	else:
 		print('Unknown command {}'.format(repr(args.command)))
 		return 1
