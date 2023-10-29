@@ -128,8 +128,8 @@ def download(url: str) -> Tuple[bytes, float, float]:
 	return buf.getvalue(), downloaded_mb, time.time() - start_time
 
 
-def download_to(name: str, url: str, file_path: str):
-	logger.info('Downloading {} from {} to {}'.format(name, url, repr(file_path)))
+def download_to(name_to_log: str, url: str, file_path: str):
+	logger.info('Downloading {} from {} to {}'.format(name_to_log, url, repr(file_path)))
 	buf, downloaded_mb, cost = download(url)
 	logger.info(f'Download complete, time cost {cost:.2f}s, {downloaded_mb / cost:.2f}MB/s')
 
@@ -320,12 +320,64 @@ def install_bungeecord():
 		download_to(file_name, url, file_path)
 
 
+def install_velocity():
+	# ================================================================
+	title('Installing Velocity')
+	build_num = get_env('BUILD_NUMBER', 'latest')
+	server_jar_path = get_env('SERVER_JARFILE')
+	logger.info('build_num: {}'.format(build_num))
+	logger.info('server_jar_path: {}'.format(server_jar_path))
+
+	velocity_versions = get_json('https://api.papermc.io/v2/projects/velocity').get('versions', [])
+	if len(velocity_versions) == 0:
+		logger.error('velocity_versions is empty')
+		sys.exit(1)
+
+	def get_build_target_for(bn: str) -> Optional[Tuple[str, str]]:
+		for vv in reversed(velocity_versions):
+			builds = get_json(f'https://api.papermc.io/v2/projects/velocity/versions/{vv}').get('builds', [])
+			if len(builds) == 0:
+				logger.warning('builds for velocity_version {} is empty'.format(repr(vv)))
+				continue
+			if bn == 'latest':
+				bn_last = builds[-1]
+				return vv, bn_last
+			if bn in map(str, builds):
+				return vv, bn
+		else:
+			return None
+
+	velocity_version, selected_bn = None, None
+	if build_num != 'latest':
+		build_target = get_build_target_for(build_num)
+		if build_target is None:
+			logger.warning('given velocity build {} not found, use latest build'.format(repr(build_num)))
+			build_num = 'latest'
+		else:
+			velocity_version, selected_bn = build_target
+	if build_num == 'latest':
+		build_target = get_build_target_for(build_num)
+		if build_target is None:
+			logger.error('failed to get latest velocity version')
+			sys.exit(1)
+		else:
+			velocity_version, selected_bn = build_target
+
+	logger.info('Selected velocity version {}, build num {}'.format(repr(velocity_version), repr(selected_bn)))
+	if velocity_version is None or selected_bn is None:
+		raise AssertionError('velocity_version or selected_bn is still None')
+
+	download_url = f'https://api.papermc.io/v2/projects/velocity/versions/{velocity_version}/builds/{selected_bn}/downloads/velocity-{velocity_version}-{selected_bn}.jar'
+	download_to('velocity server jar', download_url, server_jar_path)
+
+
 class ServerType(enum.Enum):
 	NONE = enum.auto()
 	VANILLA = enum.auto()
 	FABRIC = enum.auto()
 	PAPER = enum.auto()
 	BUNGEECORD = enum.auto()
+	VELOCITY = enum.auto()
 
 
 def main():
@@ -362,6 +414,9 @@ def main():
 
 	elif server_type == ServerType.BUNGEECORD:
 		install_bungeecord()
+
+	elif server_type == ServerType.VELOCITY:
+		install_velocity()
 
 	else:
 		raise RuntimeError('Unhandled server type {}'.format(server_type))
