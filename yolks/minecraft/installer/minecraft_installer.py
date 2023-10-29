@@ -264,7 +264,7 @@ def install_paper():
 		logger.info('using latest supported mc version: {}'.format(repr(mc_version)))
 
 	builds = get_json(f'https://api.papermc.io/v2/projects/paper/versions/{mc_version}').get('builds', [])
-	if len(supported_mc_versions) == 0:
+	if len(builds) == 0:
 		logger.error('builds for mc {} is empty'.format(repr(mc_version)))
 		sys.exit(1)
 	if build_num != 'latest' and build_num not in map(str, builds):
