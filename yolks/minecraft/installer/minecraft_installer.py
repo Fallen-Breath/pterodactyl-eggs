@@ -4,10 +4,12 @@ import enum
 import functools
 import logging
 import os
+import shutil
 import ssl
 import subprocess
 import sys
 import time
+import zipfile
 from argparse import ArgumentParser
 from io import BytesIO
 from pathlib import Path
@@ -369,6 +371,17 @@ def install_velocity():
 
 	download_url = f'https://api.papermc.io/v2/projects/velocity/versions/{velocity_version}/builds/{selected_bn}/downloads/velocity-{velocity_version}-{selected_bn}.jar'
 	download_to('velocity server jar', download_url, server_jar_path)
+
+	velocity_config_path = 'velocity.toml'
+	if not os.path.isfile(velocity_config_path):
+		logger.info('Extracting default velocity config, because the config file {} does not exist'.format(repr(velocity_config_path)))
+		try:
+			with zipfile.ZipFile(server_jar_path, 'r') as zipf:
+				zipf.extract('default-velocity.toml', path='/tmp')
+			shutil.copy('/tmp/default-velocity.toml', velocity_config_path)
+		except Exception:
+			logger.exception('Failed to extract default velocity config file')
+			sys.exit(1)
 
 
 class ServerType(enum.Enum):
