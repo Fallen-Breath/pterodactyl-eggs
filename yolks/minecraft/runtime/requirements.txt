@@ -4,10 +4,12 @@ aiocqhttp
 APScheduler
 colorlog
 cryptography
+fastapi
 googletrans
 hjson
 javaproperties
 jproperties
+mcdreforged
 lz4
 nbt
 parse
@@ -15,9 +17,11 @@ psutil
 py-cpuinfo
 pycryptodome
 pycryptodomex
+pydal
 PyNBT
 pytz
 pyyaml
+pyzstd
 redbaron
 requests
 ruamel.yaml
