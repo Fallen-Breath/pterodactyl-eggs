@@ -1,27 +1,30 @@
 # MCDR Plugins requirements
 # Collected from https://github.com/MCDReforged/PluginCatalogue/tree/meta
-APScheduler
-PyNBT
 aiocqhttp
+APScheduler
 colorlog
 cryptography
 googletrans
 hjson
 javaproperties
 jproperties
+lz4
 nbt
 parse
 psutil
 py-cpuinfo
 pycryptodome
 pycryptodomex
-pynbt
+PyNBT
+pytz
 pyyaml
 redbaron
 requests
 ruamel.yaml
 simpleeval
 speedcopy
-sqlalchemy
+SQLAlchemy
 uvicorn
 websocket-client
+xxhash
+zstandard
