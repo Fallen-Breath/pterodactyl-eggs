@@ -2,7 +2,7 @@
 set -e
 
 for SYS in "bullseye" "slim-bullseye"; do
-  for JAVA in 8 17; do
+  for JAVA in 8 17 21; do
     for MCDR in "2.12" "2.11" "2.10" "latest"; do
       if [ "$MCDR" == "latest" ]; then
         MCDR_REQUIREMENT="mcdreforged"
