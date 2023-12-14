@@ -12,10 +12,12 @@ RUN apt-get update -y \
 COPY requirements.txt /requirements.txt
 RUN python3 -m pip install -U pip \
     && pip3 install ruamel.yaml \
-    && pip3 install -r /requirements.txt
+    && pip3 install -r /requirements.txt \
+    && pip3 cache purge
 
 ARG MCDR_REQUIREMENT=mcdreforged
-RUN pip3 install -U ${MCDR_REQUIREMENT}
+RUN pip3 install -U ${MCDR_REQUIREMENT} \
+    && pip3 cache purge
 
 USER container
 ENV USER=container HOME=/home/container
