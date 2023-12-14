@@ -2,6 +2,7 @@
 # Collected from https://github.com/MCDReforged/PluginCatalogue/tree/meta
 aiocqhttp
 APScheduler
+blake3
 colorlog
 cryptography
 fastapi
