@@ -22,8 +22,15 @@ Overall tag format: `${category}-${type}-${args}`, where `type` can be `installe
 
 `yolks/minecraft`: images for Minecraft with MCDR
 
-- Tag format: `minecraft-installer-bullseye-17`, `minecraft-runtime-${OS}-${JDK_VER}-${MCDR_VER}`
-- OS: `bullseye`, `slim-bullseye`
-- JDK_VER: `8`, `17`
-- MCDR_VER: `latest`, `2.10`
-
+- Installer tag: `minecraft-installer-bullseye-17`, only this one
+- Runtime tag: `minecraft-runtime-${OS}-${JDK_VER}-${MCDR_VER}`
+  - OS: `jammy`, `bullseye`, `slim-bullseye`
+  - JDK_VER: `8`, `11`, `17`, `21`
+  - MCDR_VER: `latest`, `2.12`, `2.11`, `2.10`
+  - Examples:
+    - `fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-8-latest`
+    - `fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-17-latest`
+    - `fallenbreath/pterodactyl-yolks:minecraft-runtime-slim-bullseye-21-2.12`
+  - Notes:
+    - OS `jammy` is based on [eclipse-temurin](https://hub.docker.com/_/eclipse-temurin) image
+    - OS `bullseye`, `slim-bullseye` are based on [openjdk](https://hub.docker.com/_/openjdk) image, and are [deprecated](https://github.com/docker-library/openjdk/issues/505)
