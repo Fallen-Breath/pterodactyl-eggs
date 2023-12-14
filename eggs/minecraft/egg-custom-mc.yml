@@ -11,10 +11,10 @@ features:
 - java_version
 - pid_limit
 docker_images:
-  Java 17 + Python3.9 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-bullseye-17-latest
-  Java 8 + Python3.9 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-bullseye-8-latest
-  Java 17 + Python3.9 + MCDR 2.10: fallenbreath/pterodactyl-yolks:minecraft-runtime-bullseye-17-2.10
-  Java 8 + Python3.9 + MCDR 2.10: fallenbreath/pterodactyl-yolks:minecraft-runtime-bullseye-8-2.10
+  Java 21 + Python3.10 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-21-latest
+  Java 17 + Python3.10 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-17-latest
+  Java 11 + Python3.10 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-11-latest
+  Java 8 + Python3.10 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-8-latest
 file_denylist: []
 startup: python3 -m mcdreforged
 config:
