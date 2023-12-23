@@ -34,3 +34,6 @@ Overall tag format: `${category}-${type}-${args}`, where `type` can be `installe
   - Notes:
     - OS `jammy` is based on [eclipse-temurin](https://hub.docker.com/_/eclipse-temurin) image
     - OS `bullseye`, `slim-bullseye` are based on [openjdk](https://hub.docker.com/_/openjdk) image, and are [deprecated](https://github.com/docker-library/openjdk/issues/505)
+    - For `jammy` OS and `latest` MCDR, you can also use the shortcut image names that omit the os and mcdr parts:
+      - `fallenbreath/pterodactyl-yolks:minecraft-runtime-8`
+      - `fallenbreath/pterodactyl-yolks:minecraft-runtime-17`
