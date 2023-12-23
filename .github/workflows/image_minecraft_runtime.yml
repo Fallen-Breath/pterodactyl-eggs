@@ -8,7 +8,7 @@ on:
       - ".github/workflows/image_minecraft_runtime.yml"
       - "yolks/minecraft/runtime/**"
   schedule:
-    - cron: '0 6 * * 0'  # At 06:00 on Sunday
+    - cron: '0 0 1 * *'  # At 06:00 on day-of-month 1
 
 jobs:
   image:
