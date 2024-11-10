@@ -1,7 +1,3 @@
-install:
-  permission.yml:
-    owner: null
-
 pre_start:
   config.yml:
     working_directory: server  # pin it

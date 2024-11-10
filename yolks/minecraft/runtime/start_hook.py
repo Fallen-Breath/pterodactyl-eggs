@@ -3,15 +3,15 @@ import os
 import re
 import shutil
 import subprocess
+from typing import Dict, Any
 
 from ruamel.yaml import YAML
 
 WORKING_DIR = '/home/container'
 CONFIG_FILE = '/start_hook.yml'
 MCDR_CONFIG_FILE = 'config.yml'
-MCDR_PERMISSION_FILE = 'permission.yml'
 INSTALLATION_MARK = 'INSTALLATION_MARK'
-config: dict  # phase -> file -> override
+config: Dict[str, Dict[str, Dict[str, Any]]]  # phase -> file -> override
 
 
 def log(s: str):
@@ -101,7 +101,8 @@ def main():
 	config = read_yaml(CONFIG_FILE)
 
 	# https://pterodactyl.io/community/config/eggs/creating_a_custom_image.html#work-directory-entrypoint
-	assert os.getcwd() == WORKING_DIR, 'Unexpected working dir {}, should be {}'.format(os.getcwd(), WORKING_DIR)
+	if not os.path.samefile(os.getcwd(), WORKING_DIR):
+		raise AssertionError('Unexpected working dir {}, should be {}'.format(os.getcwd(), WORKING_DIR))
 
 	is_init = os.path.isfile(INSTALLATION_MARK)
 	if is_init:
