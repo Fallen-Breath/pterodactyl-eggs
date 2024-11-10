@@ -1,7 +1,6 @@
 install:
   config.yml:
     check_update: false  # it's useless to check update inside an image
-    advanced_console: false  # no tty environment
 
 pre_start:
   config.yml:
