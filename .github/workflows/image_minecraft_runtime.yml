@@ -1,4 +1,4 @@
-name: Docker images for Minecraft runtime yolks
+name: CI for Minecraft runtime yolks
 
 on:
   push:

@@ -22,9 +22,9 @@ Overall tag format: `${category}-${type}-${args}`, where `type` can be `installe
 
 [`yolks/minecraft`](yolks/minecraft): images for Minecraft with MCDR
 
-- Installer tag: `minecraft-installer-bullseye-${JRE_VER}`
+- Installer tag: `minecraft-installer-${JRE_VER}`
   - JRE_VER: `8`, `11`, `17`, `21`
-  - Notes: for `JRE_VERSION=21`, you can also use the tag `minecraft-installer-bullseye`
+  - Notes: for `JRE_VERSION=21`, you can also use the tag `minecraft-installer`
 - Runtime tag: `minecraft-runtime-${JDK_VER}-${MCDR_VER}`
   - JDK_VER: `8`, `11`, `17`, `21`
   - MCDR_VER: `latest`, `2.13`, `2.12`

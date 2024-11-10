@@ -40,7 +40,7 @@ scripts:
 
       set -e
       python3 /minecraft_installer.py vanilla
-    container: fallenbreath/pterodactyl-yolks:minecraft-installer-bullseye-17
+    container: fallenbreath/pterodactyl-yolks:minecraft-installer
     entrypoint: bash
 variables:
 - name: 服务器 Jar 文件

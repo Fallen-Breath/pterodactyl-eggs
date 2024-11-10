@@ -1,4 +1,4 @@
-name: Docker images for Minecraft installer yolks
+name: CI for Minecraft installer yolks
 
 on:
   push:
