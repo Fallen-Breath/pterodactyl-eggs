@@ -63,3 +63,5 @@ jobs:
             IMAGE_BASE=${{ steps.config.outputs.image_base }}
             MCDR_VERSION=${{ matrix.mcdr }}
             JAVA_VERSION=${{ matrix.java }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
