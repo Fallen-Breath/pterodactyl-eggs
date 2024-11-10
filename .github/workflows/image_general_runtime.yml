@@ -1,0 +1,31 @@
+name: CI for general runtime yolks
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/image_general_runtime.yml"
+      - ".github/workflows/image_one.yml"
+      - "yolks/general/runtime/**"
+  schedule:
+    - cron: '0 9 1 * *'  # At 09:00 on day-of-month 1
+  workflow_dispatch:
+
+jobs:
+  image:
+    name: Image for java ${{ matrix.java }}
+    strategy:
+      matrix:
+        system: ['alpine', 'debian']
+
+    uses: ./.github/workflows/image_one.yml
+    secrets: inherit
+    with:
+      dockerfile_path: yolks/general/runtime/Dockerfile-${{ matrix.system }}
+      docker_build_context: yolks/general/runtime
+      build_args: ''
+      image_name: fallenbreath/pterodactyl-yolks
+      image_tag_maker_script: |-
+        core.setOutput('target_tags', 'general-runtime-${{ matrix.system }}')
+      push: ${{ github.event_name != 'pull_request' }}

@@ -1,0 +1,31 @@
+name: CI for general installer yolks
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/image_general_installer.yml"
+      - ".github/workflows/image_one.yml"
+      - "yolks/general/installer/**"
+  schedule:
+    - cron: '0 8 1 * *'  # At 08:00 on day-of-month 1
+  workflow_dispatch:
+
+jobs:
+  image:
+    name: Image for java ${{ matrix.java }}
+    strategy:
+      matrix:
+        system: ['alpine', 'debian']
+
+    uses: ./.github/workflows/image_one.yml
+    secrets: inherit
+    with:
+      dockerfile_path: yolks/general/installer/Dockerfile-${{ matrix.system }}
+      docker_build_context: yolks/general/installer
+      build_args: ''
+      image_name: fallenbreath/pterodactyl-yolks
+      image_tag_maker_script: |-
+        core.setOutput('target_tags', 'general-installer-${{ matrix.system }}')
+      push: ${{ github.event_name != 'pull_request' }}
