@@ -1,7 +1,11 @@
 FROM alpine:latest
 
-RUN apk add --update --no-cache tzdata envsubst \
-    && adduser -h /home/container -D container
+RUN <<EOT
+set -eux
+apk add --update --no-cache tzdata envsubst
+adduser -h /home/container -D container
+EOT
+
 USER container
 ENV USER=container HOME=/home/container
 

@@ -1,3 +1,6 @@
 FROM alpine:latest
 
-RUN apk add --update --no-cache tzdata ca-certificates curl git jq wget
+RUN <<EOT
+set -eux
+apk add --update --no-cache tzdata ca-certificates curl git jq wget
+EOT
