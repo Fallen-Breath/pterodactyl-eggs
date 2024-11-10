@@ -10,6 +10,7 @@ on:
       - "yolks/minecraft/runtime/**"
   schedule:
     - cron: '0 7 1 * *'  # At 07:00 on day-of-month 1
+  workflow_dispatch:
 
 jobs:
   image:

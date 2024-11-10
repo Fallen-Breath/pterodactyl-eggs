@@ -10,6 +10,7 @@ on:
       - "yolks/minecraft/installer/**"
   schedule:
     - cron: '0 6 1 * *'  # At 06:00 on day-of-month 1
+  workflow_dispatch:
 
 jobs:
   image:
