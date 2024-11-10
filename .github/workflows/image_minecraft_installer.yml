@@ -14,7 +14,7 @@ on:
 
 jobs:
   image:
-    name: Image for java ${{ matrix.java }}
+    name: java=${{ matrix.java }}
     strategy:
       matrix:
         java: ['8', '11', '17', '21']

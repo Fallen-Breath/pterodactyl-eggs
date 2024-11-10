@@ -14,7 +14,7 @@ on:
 
 jobs:
   image:
-    name: Image for java ${{ matrix.java }}
+    name: system=${{ matrix.system }}
     strategy:
       matrix:
         system: ['alpine', 'debian']
