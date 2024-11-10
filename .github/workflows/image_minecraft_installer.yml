@@ -6,58 +6,30 @@ on:
       - master
     paths:
       - ".github/workflows/image_minecraft_installer.yml"
+      - ".github/workflows/image_one.yml"
       - "yolks/minecraft/installer/**"
   schedule:
-    - cron: '0 0 1 * *'  # At 06:00 on day-of-month 1
+    - cron: '0 6 1 * *'  # At 06:00 on day-of-month 1
 
 jobs:
   image:
-    runs-on: ubuntu-latest
+    name: Image for java ${{ matrix.java }}
     strategy:
       matrix:
         java: ['8', '11', '17', '21']
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Generate image config
-        id: config
-        run: |
-          echo "image_tag=minecraft-installer-${{ matrix.java }}" >> $GITHUB_OUTPUT
-          if [ ${{ matrix.java }} == '21' ]; then
-            echo "image_tag_extra=minecraft-installer" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: fallenbreath
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: fallenbreath/pterodactyl-yolks
-          tags: |
-            ${{ steps.config.outputs.image_tag }}
-            ${{ steps.config.outputs.image_tag_extra }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64
-          file: yolks/minecraft/installer/Dockerfile
-          context: yolks/minecraft/installer
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            JAVA_VERSION=${{ matrix.java }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+    uses: ./.github/workflows/image_one.yml
+    secrets: inherit
+    with:
+      dockerfile_path: yolks/minecraft/installer/Dockerfile
+      docker_build_context: yolks/minecraft/installer
+      build_args: |-
+        JAVA_VERSION=${{ matrix.java }}
+      image_name: fallenbreath/pterodactyl-yolks
+      image_tag_maker_script: |-
+        let targetTags = ['minecraft-installer-${{ matrix.java }}']
+        if ('${{ matrix.java }}' == '21') {
+          targetTags.push('minecraft-installer')
+        }
+        core.setOutput('target_tags', targetTags.join('\n'))
+      push: ${{ github.event_name != 'pull_request' }}

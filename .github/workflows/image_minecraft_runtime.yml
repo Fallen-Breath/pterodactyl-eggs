@@ -6,62 +6,32 @@ on:
       - master
     paths:
       - ".github/workflows/image_minecraft_runtime.yml"
+      - ".github/workflows/image_one.yml"
       - "yolks/minecraft/runtime/**"
   schedule:
-    - cron: '0 0 1 * *'  # At 06:00 on day-of-month 1
+    - cron: '0 7 1 * *'  # At 07:00 on day-of-month 1
 
 jobs:
   image:
-    runs-on: ubuntu-latest
-
+    name: Image for java ${{ matrix.java }}, mcdr ${{ matrix.mcdr }}
     strategy:
       matrix:
         java: ['8', '11', '17', '21']
         mcdr: ['latest', '2.13']
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Generate image config
-        id: config
-        run: |
-          echo "image_tag=minecraft-runtime-${{ matrix.java }}-${{ matrix.mcdr }}" >> $GITHUB_OUTPUT
-          if [ ${{ matrix.mcdr }} == 'latest' ]; then
-            echo "image_tag_extra=minecraft-runtime-${{ matrix.java }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: fallenbreath
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: fallenbreath/pterodactyl-yolks
-          tags: |
-            ${{ steps.config.outputs.image_tag }}
-            ${{ steps.config.outputs.image_tag_extra }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64
-          file: yolks/minecraft/runtime/Dockerfile
-          context: yolks/minecraft/runtime
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            IMAGE_BASE=${{ steps.config.outputs.image_base }}
-            MCDR_VERSION=${{ matrix.mcdr }}
-            JAVA_VERSION=${{ matrix.java }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+    uses: ./.github/workflows/image_one.yml
+    secrets: inherit
+    with:
+      dockerfile_path: yolks/minecraft/runtime/Dockerfile
+      docker_build_context: yolks/minecraft/runtime
+      build_args: |-
+        MCDR_VERSION=${{ matrix.mcdr }}
+        JAVA_VERSION=${{ matrix.java }}
+      image_name: fallenbreath/pterodactyl-yolks
+      image_tag_maker_script: |-
+        let targetTags = ['minecraft-runtime-${{ matrix.java }}-${{ matrix.mcdr }}']
+        if ('${{ matrix.mcdr }}' == 'latest') {
+          targetTags.push('minecraft-runtime-${{ matrix.java }}')
+        }
+        core.setOutput('target_tags', targetTags.join('\n'))
+      push: ${{ github.event_name != 'pull_request' }}
