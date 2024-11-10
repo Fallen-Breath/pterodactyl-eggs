@@ -7,41 +7,27 @@ from typing import Iterator, NamedTuple
 
 
 class Context(NamedTuple):
-	image_base: str
-	system: str
 	java: str
 	mcdr: str
 	tag: str
 
 
 def iterate_all() -> Iterator[Context]:
-	for image_base, systems in {
-		'eclipse-temurin': ['jammy'],
-		'openjdk': ['bullseye', 'slim-bullseye'],
-	}.items():
-		for system in systems:
-			for java in [8, 11, 17, 21]:
-				for mcdr in ['latest', '2.13', '2.12']:
-					tag = f'fallenbreath/pterodactyl-yolks:minecraft-runtime-{system}-{java}-{mcdr}'
-					yield Context(image_base, system, str(java), mcdr, tag)
+	for java in [8, 11, 17, 21]:
+		for mcdr in ['latest', '2.13', '2.12']:
+			tag = f'fallenbreath/pterodactyl-yolks:minecraft-runtime-{java}-{mcdr}'
+			yield Context(str(java), mcdr, tag)
 
 
 def cmd_build(args: argparse.Namespace):
 	for ctx in iterate_all():
-		if ctx.mcdr == 'latest':
-			mcdr_req = 'mcdreforged'
-		else:
-			mcdr_req = f'mcdreforged~={ctx.mcdr}'
-
-		print(f'======== System: {ctx.system}, Java: {ctx.java}, MCDR: {ctx.mcdr}, Tag: {ctx.tag!r} ========')
+		print(f'======== Java: {ctx.java}, MCDR: {ctx.mcdr}, Tag: {ctx.tag!r} ========')
 
 		cmd = [
 			'docker', 'build', os.getcwd(),
 			'-t', ctx.tag,
-			'--build-arg', f'IMAGE_BASE={ctx.image_base}',
-			'--build-arg', f'SYSTEM={ctx.system}',
+			'--build-arg', f'MCDR_VERSION={ctx.mcdr}',
 			'--build-arg', f'JAVA_VERSION={ctx.java}',
-			'--build-arg', f'MCDR_REQUIREMENT={mcdr_req}',
 		]
 		if args.http_proxy is not None:
 			cmd.extend([

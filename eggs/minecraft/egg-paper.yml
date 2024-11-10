@@ -14,7 +14,7 @@ docker_images:
   Java 11 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-11
   Java 8 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-8
 file_denylist: []
-startup: python3 -m mcdreforged
+startup: python3 -m mcdreforged start --auto-init
 config:
   files: |-
     {

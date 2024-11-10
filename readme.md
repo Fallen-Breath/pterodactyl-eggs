@@ -23,17 +23,13 @@ Overall tag format: `${category}-${type}-${args}`, where `type` can be `installe
 `yolks/minecraft`: images for Minecraft with MCDR
 
 - Installer tag: `minecraft-installer-bullseye-17`, only this one
-- Runtime tag: `minecraft-runtime-${OS}-${JDK_VER}-${MCDR_VER}`
-  - OS: `jammy`, `bullseye`, `slim-bullseye`
+- Runtime tag: `minecraft-runtime-${JDK_VER}-${MCDR_VER}`
   - JDK_VER: `8`, `11`, `17`, `21`
   - MCDR_VER: `latest`, `2.13`, `2.12`
   - Examples:
-    - `fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-8-latest`
-    - `fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-17-latest`
-    - `fallenbreath/pterodactyl-yolks:minecraft-runtime-slim-bullseye-21-2.12`
+    - `fallenbreath/pterodactyl-yolks:minecraft-runtime-21-latest`
+    - `fallenbreath/pterodactyl-yolks:minecraft-runtime-8-2.12`
   - Notes:
-    - OS `jammy` is based on [eclipse-temurin](https://hub.docker.com/_/eclipse-temurin) image
-    - OS `bullseye`, `slim-bullseye` are based on [openjdk](https://hub.docker.com/_/openjdk) image, and are [deprecated](https://github.com/docker-library/openjdk/issues/505)
-    - For `jammy` OS and `latest` MCDR, you can also use the shortcut image names that omit the os and mcdr parts:
+    - For `latest` MCDR, you can also use the shortcut image names that omit the os and mcdr parts:
       - `fallenbreath/pterodactyl-yolks:minecraft-runtime-8`
       - `fallenbreath/pterodactyl-yolks:minecraft-runtime-17`

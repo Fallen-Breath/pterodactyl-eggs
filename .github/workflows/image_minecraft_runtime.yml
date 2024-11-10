@@ -16,9 +16,8 @@ jobs:
 
     strategy:
       matrix:
-        system: ['jammy', 'bullseye', 'slim-bullseye']
         java: ['8', '11', '17', '21']
-        mcdr: ['latest', '2.13', '2.12']
+        mcdr: ['latest', '2.13']
 
     steps:
       - uses: actions/checkout@v4
@@ -26,23 +25,8 @@ jobs:
       - name: Generate image config
         id: config
         run: |
-          echo "image_tag=minecraft-runtime-${{ matrix.system }}-${{ matrix.java }}-${{ matrix.mcdr }}" >> $GITHUB_OUTPUT
-          
+          echo "image_tag=minecraft-runtime-${{ matrix.java }}-${{ matrix.mcdr }}" >> $GITHUB_OUTPUT
           if [ ${{ matrix.mcdr }} == 'latest' ]; then
-            echo "mcdr_req=mcdreforged" >> $GITHUB_OUTPUT
-          else
-            echo "mcdr_req=mcdreforged~=${{ matrix.mcdr }}" >> $GITHUB_OUTPUT
-          fi
-          
-          if [ ${{ matrix.system }} == 'jammy' ]; then
-            echo "image_base=eclipse-temurin" >> $GITHUB_OUTPUT
-          elif [ ${{ matrix.system }} == 'bullseye' ] || [ ${{ matrix.system }} == 'slim-bullseye' ]; then
-            echo "image_base=openjdk" >> $GITHUB_OUTPUT
-          else
-            exit 1
-          fi
-          
-          if [ ${{ matrix.system }} == 'jammy' ] && [ ${{ matrix.mcdr }} == 'latest' ]; then
             echo "image_tag_extra=minecraft-runtime-${{ matrix.java }}" >> $GITHUB_OUTPUT
           fi
 
@@ -77,6 +61,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             IMAGE_BASE=${{ steps.config.outputs.image_base }}
-            SYSTEM=${{ matrix.system }}
+            MCDR_VERSION=${{ matrix.mcdr }}
             JAVA_VERSION=${{ matrix.java }}
-            MCDR_REQUIREMENT=${{ steps.config.outputs.mcdr_req }}
