@@ -19,10 +19,9 @@ config:
   files: |-
     {
         "server/velocity.toml": {
-            "parser": "toml",
+            "parser": "file",
             "find": {
-                "bind": "0.0.0.0:{{server.build.default.port}}"
-                "query.port": "{{server.build.default.port}}"
+                "bind = ": "bind = \"0.0.0.0:{{server.build.default.port}}\""
             }
         }
     }

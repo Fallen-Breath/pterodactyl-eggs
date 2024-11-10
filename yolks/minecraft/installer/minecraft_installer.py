@@ -4,10 +4,13 @@ import enum
 import functools
 import logging
 import os
+import secrets
 import ssl
+import string
 import subprocess
 import sys
 import time
+import zipfile
 from argparse import ArgumentParser
 from io import BytesIO
 from pathlib import Path
@@ -369,6 +372,21 @@ def install_velocity():
 
 	download_url = f'https://api.papermc.io/v2/projects/velocity/versions/{velocity_version}/builds/{selected_bn}/downloads/velocity-{velocity_version}-{selected_bn}.jar'
 	download_to('velocity server jar', download_url, server_jar_path)
+
+	velocity_config_file = 'velocity.toml'
+	velocity_config_file_in_jar = 'default-velocity.toml'
+	if not os.path.isfile(velocity_config_file):
+		logger.info('Velocity config file {} not found, extracting the default one from jar {}'.format(repr(velocity_config_file), repr(velocity_config_file_in_jar)))
+		with zipfile.ZipFile(server_jar_path, 'r') as zipf:
+			with open(velocity_config_file, 'wb') as outf:
+				outf.write(zipf.read(velocity_config_file_in_jar))
+
+	velocity_secret_file = 'forwarding.secret'
+	if not os.path.isfile(velocity_secret_file):
+		logger.info('Velocity forwarding secret file {} not found, creating a new one'.format(repr(velocity_secret_file)))
+		with open(velocity_secret_file, 'w') as f:
+			charset = string.ascii_letters + string.digits
+			f.write(''.join(secrets.choice(charset) for _ in range(12)))
 
 
 class ServerType(enum.Enum):
