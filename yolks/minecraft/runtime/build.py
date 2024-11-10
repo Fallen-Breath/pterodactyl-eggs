@@ -21,7 +21,7 @@ def iterate_all() -> Iterator[Context]:
 	}.items():
 		for system in systems:
 			for java in [8, 11, 17, 21]:
-				for mcdr in ['latest', '2.12', '2.11', '2.10']:
+				for mcdr in ['latest', '2.13', '2.12']:
 					tag = f'fallenbreath/pterodactyl-yolks:minecraft-runtime-{system}-{java}-{mcdr}'
 					yield Context(image_base, system, str(java), mcdr, tag)
 

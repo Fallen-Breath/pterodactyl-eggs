@@ -26,7 +26,7 @@ Overall tag format: `${category}-${type}-${args}`, where `type` can be `installe
 - Runtime tag: `minecraft-runtime-${OS}-${JDK_VER}-${MCDR_VER}`
   - OS: `jammy`, `bullseye`, `slim-bullseye`
   - JDK_VER: `8`, `11`, `17`, `21`
-  - MCDR_VER: `latest`, `2.12`, `2.11`, `2.10`
+  - MCDR_VER: `latest`, `2.13`, `2.12`
   - Examples:
     - `fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-8-latest`
     - `fallenbreath/pterodactyl-yolks:minecraft-runtime-jammy-17-latest`
