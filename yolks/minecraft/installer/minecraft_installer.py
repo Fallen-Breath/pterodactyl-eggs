@@ -104,12 +104,19 @@ def get_json(url: str):
 
 def download(url: str) -> Tuple[bytes, float, float]:
 	buf = BytesIO()
-	response = request_get(url, stream=True)
+	response = request_get(url, stream=True)  # Assuming request_get is requests.get or similar
+
+	total_mb = None
 	try:
-		total_mb = int(response.headers.get('content-length')) / 1048576
-	except (KeyError, ValueError, AttributeError, TypeError):
-		logger.error('Bad response from {}, header: {}, body: {}'.format(url, response.headers, len(response.content)))
-		raise
+		if 'content-length' in response.headers:
+			total_mb = int(response.headers['content-length']) / 1048576
+	except (ValueError, TypeError):
+		logger.warning(f'Invalid content-length from {url}, headers: {response.headers}')
+		total_mb = None
+
+	if total_mb is None:
+		logger.info(f'Downloading from {url} with unknown total size')
+
 	downloaded_mb = 0
 	start_time = time.time()
 	last_report = start_time
@@ -120,16 +127,19 @@ def download(url: str) -> Tuple[bytes, float, float]:
 		buf.write(chunk)
 
 		if now - last_report >= 5:
-			percent = (downloaded_mb / max(total_mb, 1)) * 100
-			if percent > 0:
-				eta_sec = (now - start_time) / percent * (100 - percent)
-				if eta_sec > 60:
-					eta = f'{eta_sec / 60:.2f}min'
+			if total_mb is not None:
+				percent = (downloaded_mb / max(total_mb, 1)) * 100
+				if percent > 0:
+					eta_sec = (now - start_time) / percent * (100 - percent)
+					if eta_sec > 60:
+						eta = f'{eta_sec / 60:.2f}min'
+					else:
+						eta = f'{eta_sec:.2f}s'
 				else:
-					eta = f'{eta_sec:.2f}s'
+					eta = 'N/A'
+				logger.info(f' {downloaded_mb:.2f}MB / {total_mb:.2f}MB, {percent:.2f}%, ETA {eta}')
 			else:
-				eta = 'N/A'
-			logger.info(f'  {downloaded_mb:.2f}MB / {total_mb:.2f}MB, {percent:.2f}%, ETA {eta}')
+				logger.info(f' {downloaded_mb:.2f}MB downloaded (unknown total), elapsed {now - start_time:.2f}s')
 			last_report = now
 
 	return buf.getvalue(), downloaded_mb, time.time() - start_time
