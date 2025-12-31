@@ -105,7 +105,11 @@ def get_json(url: str):
 def download(url: str) -> Tuple[bytes, float, float]:
 	buf = BytesIO()
 	response = request_get(url, stream=True)
-	total_mb = int(response.headers.get('content-length')) / 1048576
+	try:
+		total_mb = int(response.headers.get('content-length')) / 1048576
+	except (KeyError, ValueError, AttributeError, TypeError):
+		logger.error('Bad response from {}, header: {}, body: {}'.format(url, response.headers, len(response.content)))
+		raise
 	downloaded_mb = 0
 	start_time = time.time()
 	last_report = start_time
