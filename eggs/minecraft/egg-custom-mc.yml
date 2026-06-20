@@ -11,6 +11,7 @@ features:
 - java_version
 - pid_limit
 docker_images:
+  Java 25 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-25
   Java 21 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-21
   Java 17 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-17
   Java 11 + MCDR 最新版: fallenbreath/pterodactyl-yolks:minecraft-runtime-11
