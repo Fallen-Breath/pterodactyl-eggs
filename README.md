@@ -16,7 +16,7 @@ Overall tag format: `${category}-${type}-${args}`, where `type` can be `installe
 [`yolks/general`](yolks/general): images for general applications
 
 - Tag format: `general-installer-${OS}`, `general-runtime-${OS}`
-- OS: `alpine`, `debian` (bullseye-slim)
+- OS: `alpine`, `debian` (trixie-slim)
 
 ### minecraft
 
