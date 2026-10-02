@@ -27,7 +27,7 @@ Overall tag format: `${category}-${type}-${args}`, where `type` can be `installe
   - Notes: for `JRE_VERSION=21`, you can also use the tag `minecraft-installer`
 - Runtime tag: `minecraft-runtime-${JDK_VER}-${MCDR_VER}`
   - JDK_VER: `8`, `17`, `21`, `25`
-  - MCDR_VER: `latest`, `2.15`, `2.14`
+  - MCDR_VER: `latest`, `2.16`
   - Examples:
     - `fallenbreath/pterodactyl-yolks:minecraft-runtime-21-latest`
     - `fallenbreath/pterodactyl-yolks:minecraft-runtime-8-2.12`
