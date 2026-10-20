@@ -313,7 +313,7 @@ def install_bungeecord():
 	logger.info('build_num: {}'.format(build_num))
 	logger.info('server_jar_path: {}'.format(server_jar_path))
 
-	data = get_json(f'https://ci.md-5.net/job/Bungeecord/api/json')
+	data = get_json('https://hub.spigotmc.org/jenkins/job/BungeeCord/api/json')
 	builds = data['builds']
 	if len(builds) == 0:
 		logger.error('build num list is empty')
