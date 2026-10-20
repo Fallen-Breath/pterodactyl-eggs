@@ -63,6 +63,12 @@ def get_env(name: str, default: Optional[str] = None, warn_if_missing: bool = Tr
 
 
 def request_get(*args, **kwargs) -> requests.Response:
+	url = args[0] if args else kwargs.get('url', '')
+	if url.startswith(('https://fill.papermc.io/', 'https://fill-data.papermc.io/')):
+		kwargs.setdefault('headers', {}).setdefault(
+			'User-Agent', 'pterodactyl-eggs (https://github.com/Fallen-Breath/pterodactyl-eggs)'
+		)
+
 	http_proxy = get_env('INSTALLER_HTTP_PROXY', '', warn_if_missing=False)
 	if http_proxy:
 		kwargs['proxies'] = {
@@ -269,7 +275,8 @@ def install_paper():
 	logger.info('build_num: {}'.format(build_num))
 	logger.info('server_jar_path: {}'.format(server_jar_path))
 
-	supported_mc_versions = get_json('https://api.papermc.io/v2/projects/paper').get('versions', [])
+	version_groups = get_json('https://fill.papermc.io/v3/projects/paper').get('versions', {})
+	supported_mc_versions = [version for versions in version_groups.values() for version in versions]
 	if len(supported_mc_versions) == 0:
 		logger.error('supported_mc_versions is empty')
 		sys.exit(1)
@@ -277,10 +284,10 @@ def install_paper():
 		logger.warning('given mc version {} is unsupported, use latest version'.format(repr(mc_version)))
 		mc_version = 'latest'
 	if mc_version == 'latest':
-		mc_version = supported_mc_versions[-1]
+		mc_version = supported_mc_versions[0]
 		logger.info('using latest supported mc version: {}'.format(repr(mc_version)))
 
-	builds = get_json(f'https://api.papermc.io/v2/projects/paper/versions/{mc_version}').get('builds', [])
+	builds = get_json(f'https://fill.papermc.io/v3/projects/paper/versions/{mc_version}').get('builds', [])
 	if len(builds) == 0:
 		logger.error('builds for mc {} is empty'.format(repr(mc_version)))
 		sys.exit(1)
@@ -291,7 +298,8 @@ def install_paper():
 		build_num = max(builds)
 		logger.info('using latest build num: {}'.format(repr(build_num)))
 
-	download_url = f'https://api.papermc.io/v2/projects/paper/versions/{mc_version}/builds/{build_num}/downloads/paper-{mc_version}-{build_num}.jar'
+	build = get_json(f'https://fill.papermc.io/v3/projects/paper/versions/{mc_version}/builds/{build_num}')
+	download_url = build['downloads']['server:default']['url']
 	download_to('paper server jar', download_url, server_jar_path)
 
 	install_vanilla(mc_version, 'cache/mojang_{}.jar'.format(mc_version))
@@ -345,20 +353,21 @@ def install_velocity():
 	logger.info('build_num: {}'.format(build_num))
 	logger.info('server_jar_path: {}'.format(server_jar_path))
 
-	velocity_versions = get_json('https://api.papermc.io/v2/projects/velocity').get('versions', [])
+	version_groups = get_json('https://fill.papermc.io/v3/projects/velocity').get('versions', {})
+	velocity_versions = [version for versions in version_groups.values() for version in versions]
 	if len(velocity_versions) == 0:
 		logger.error('velocity_versions is empty')
 		sys.exit(1)
 
 	def get_build_target_for(bn: str) -> Optional[Tuple[str, str]]:
-		for vv in reversed(velocity_versions):
-			builds = get_json(f'https://api.papermc.io/v2/projects/velocity/versions/{vv}').get('builds', [])
+		for vv in velocity_versions:
+			builds = get_json(f'https://fill.papermc.io/v3/projects/velocity/versions/{vv}').get('builds', [])
 			if len(builds) == 0:
 				logger.warning('builds for velocity_version {} is empty'.format(repr(vv)))
 				continue
 			if bn == 'latest':
-				bn_last = builds[-1]
-				return vv, bn_last
+				bn_latest = builds[0]
+				return vv, bn_latest
 			if bn in map(str, builds):
 				return vv, bn
 		else:
@@ -384,7 +393,8 @@ def install_velocity():
 	if velocity_version is None or selected_bn is None:
 		raise AssertionError('velocity_version or selected_bn is still None')
 
-	download_url = f'https://api.papermc.io/v2/projects/velocity/versions/{velocity_version}/builds/{selected_bn}/downloads/velocity-{velocity_version}-{selected_bn}.jar'
+	build = get_json(f'https://fill.papermc.io/v3/projects/velocity/versions/{velocity_version}/builds/{selected_bn}')
+	download_url = build['downloads']['server:default']['url']
 	download_to('velocity server jar', download_url, server_jar_path)
 
 	velocity_config_file = 'velocity.toml'
