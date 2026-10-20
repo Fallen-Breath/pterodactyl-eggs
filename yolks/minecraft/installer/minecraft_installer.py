@@ -315,19 +315,21 @@ def install_bungeecord():
 
 	data = get_json('https://hub.spigotmc.org/jenkins/job/BungeeCord/api/json')
 	builds = data['builds']
-	if len(builds) == 0:
-		logger.error('build num list is empty')
-		sys.exit(1)
-	build_map = {b['number']: b for b in builds}
-	build_nums = list(build_map.keys())
-	if build_num != 'latest' and build_num not in map(str, build_nums):
-		logger.warning('given bungeecord build {} not found, use latest build'.format(repr(build_num)))
+	build_map = {str(b['number']): b for b in builds}
+	if build_num != 'latest' and build_num not in build_map:
+		logger.warning('given bungeecord build {} not found, use latest successful build'.format(repr(build_num)))
 		build_num = 'latest'
 	if build_num == 'latest':
-		build_num = max(map(int, build_nums))
-		logger.info('using latest build num: {}'.format(repr(build_num)))
+		build = data.get('lastSuccessfulBuild')
+		if build is None:
+			logger.error('no successful bungeecord build found')
+			sys.exit(1)
+		build_num = str(build['number'])
+		logger.info('using latest successful build num: {}'.format(repr(build_num)))
+	else:
+		build = build_map[build_num]
 
-	data = get_json(build_map[build_num]['url'] + 'api/json')
+	data = get_json(build['url'] + 'api/json')
 	if len(data['artifacts']) == 0:
 		logger.error('empty artifact for build {}'.format(build_num))
 		return

@@ -57,7 +57,7 @@ variables:
   description: |-
     Bungeecord 版本的构建版本号。
 
-    如果设置为 latest 将安装最新版本。无效版本将默认为最新版本。
+    如果设置为 latest 将安装最新的成功构建。无效版本将默认为最新的成功构建。
   env_variable: BUILD_NUMBER
   default_value: latest
   user_viewable: false
